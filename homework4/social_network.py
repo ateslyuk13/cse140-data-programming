@@ -1,4 +1,4 @@
-# Name: ...
+# Name: Hongjoo Lee
 # CSE 140
 # Homework 4
 
@@ -17,19 +17,25 @@ practice_graph = nx.Graph()
 practice_graph.add_node("A")
 practice_graph.add_node("B")
 practice_graph.add_node("C")
-# TODO: Add more here...
+practice_graph.add_node("D")
+practice_graph.add_node("E")
+practice_graph.add_node("F")
 
 practice_graph.add_edge("A", "B")
 practice_graph.add_edge("A", "C")
 practice_graph.add_edge("B", "C")
-# TODO: Add more here...
+practice_graph.add_edge("B", "D")
+practice_graph.add_edge("C", "D")
+practice_graph.add_edge("C", "F")
+practice_graph.add_edge("D", "E")
+practice_graph.add_edge("D", "F")
 
 assert len(practice_graph.nodes()) == 6
 assert len(practice_graph.edges()) == 8
 
 def draw_practice_graph():
     """Draw practice_graph to the screen."""
-    nx.draw(practice_graph)
+    nx.draw_networkx(practice_graph)
     plt.show()
 
 # Comment out this line after you have visually verified your practice graph.
@@ -41,14 +47,34 @@ draw_practice_graph()
 ### Problem 1b
 ###
 
-# (Your code goes here.)
+nodes = ['Nurse', 'Juliet', 'Tybalt', 'Capulet', 'Friar Laurence', 'Romeo', 'Benvolio', 'Montague', 'Escalus', 'Mercutio', 'Paris']
+
+rj = nx.Graph()
+rj.add_nodes_from(nodes)
+rj.add_edge('Nurse', 'Juliet')
+rj.add_edge('Juliet', 'Tybalt')
+rj.add_edge('Juliet', 'Capulet')
+rj.add_edge('Juliet', 'Friar Laurence')
+rj.add_edge('Juliet', 'Romeo')
+rj.add_edge('Tybalt', 'Capulet')
+rj.add_edge('Capulet', 'Escalus')
+rj.add_edge('Capulet', 'Paris')
+rj.add_edge('Romeo', 'Friar Laurence')
+rj.add_edge('Romeo', 'Benvolio')
+rj.add_edge('Romeo', 'Montague')
+rj.add_edge('Romeo', 'Mercutio')
+rj.add_edge('Montague', 'Benvolio')
+rj.add_edge('Montague', 'Escalus')
+rj.add_edge('Escalus', 'Mercutio')
+rj.add_edge('Escalus', 'Paris')
+rj.add_edge('Paris', 'Mercutio')
 
 assert len(rj.nodes()) == 11
 assert len(rj.edges()) == 17
 
 def draw_rj():
     """Draw the rj graph to the screen and to a file."""
-    nx.draw(rj)
+    nx.draw_networkx(rj)
     plt.savefig("romeo-and-juliet.pdf")
     plt.show()
 
@@ -73,14 +99,14 @@ def friends_of_friends(graph, user):
     """Returns a set of friends of friends of the given user, in the given graph.
     The result does not include the given user nor any of that user's friends.
     """
-    print "To be implemented"
+    return {friend_of_friend for friend in friends(graph, user) for friend_of_friend in friends(graph, friend)} - friends(graph, user) - set([user])
 
 assert friends_of_friends(rj, "Mercutio") == set(['Benvolio', 'Capulet', 'Friar Laurence', 'Juliet', 'Montague'])
 
 
 def common_friends(graph, user1, user2):
     """Returns the set of friends that user1 and user2 have in common."""
-    print "To be implemented"
+    return friends(graph, user1) & friends(graph, user2)
 
 assert common_friends(practice_graph,"A", "B") == set(['C'])
 assert common_friends(practice_graph,"A", "D") == set(['B', 'C'])
@@ -105,7 +131,9 @@ def number_of_common_friends_map(graph, user):
         - A is friends with D
     number_of_common_friends_map(G, "A")  =>   { 'B':2, 'C':1 }
     """
-    print "To be implemented"
+    candidates = {node for node in graph.nodes()} - friends(graph, user) - set([user])
+    return {friend : len(common_friends(graph, user, friend)) for friend in candidates if 0 != len(common_friends(graph, user, friend))} 
+
 
 assert number_of_common_friends_map(practice_graph, "A") == {'D': 2, 'F': 1}
 
@@ -117,7 +145,12 @@ def number_map_to_sorted_list(map):
     The keys are sorted by the number they map to, from greatest to least.
     When two keys map to the same number, the keys are sorted by their
     natural sort order, from least to greatest."""
-    print "To be implemented"
+    from itertools import chain, groupby
+    sorted_tuples = sorted(map.items(), key=lambda x:x[1], reverse=True)
+    result = chain(
+        *(sorted( (k for k,v in items) ) for k, items in groupby(sorted_tuples, key=lambda x:x[1]))
+    )
+    return list(result)
 
 assert number_map_to_sorted_list({"a":5, "b":2, "c":7, "d":5, "e":5}) == ['c', 'a', 'd', 'e', 'b']
 
@@ -128,7 +161,8 @@ def recommend_by_number_of_common_friends(graph, user):
     who are not yet a friend of the given user.
     The order of the list is determined by the number of common friends.
     """
-    print "To be implemented"
+    map = number_of_common_friends_map(graph, user)
+    return number_map_to_sorted_list(map)
 
 
 assert recommend_by_number_of_common_friends(practice_graph,"A") == ['D', 'F']
