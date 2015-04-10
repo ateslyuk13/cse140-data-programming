@@ -303,8 +303,11 @@ for fid in sorted_fids:
 ###
 ### Problem 11
 ###
+n_same = sum(1 for fid in sorted_fids if recommend_by_influence(facebook, fid)[:10] == recommend_by_number_of_common_friends(facebook, fid)[:10])
+print 'Same: %d, Difference: %d'%(n_same, len(sorted_fids)-n_same)
 
 
 ###
 ### Problem 12
 ###
+problem7(facebook)
