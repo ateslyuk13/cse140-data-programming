@@ -208,8 +208,20 @@ assert recommend_by_influence(rj, "Mercutio") == ['Capulet', 'Montague', 'Benvol
 ###
 ### Problem 4
 ###
+def problem4(graph):
+    '''
+    >>> problem4(rj)
+    Unchanged recommendations: ['name', 'name', ...]
+    Changed recommendations: ['name', 'name', ...]
+    '''
+    people = set(graph.nodes())
+    unchanged = {person for person in people 
+            if recommend_by_influence(graph, person) == recommend_by_number_of_common_friends(graph, person)}
+    changed = people - unchanged
+    print 'Unchanged recommendations:', sorted(unchanged)
+    print 'Changed recommendations:', sorted(changed)
 
-
+problem4(rj)
 
 ###
 ### Problem 5
@@ -228,6 +240,37 @@ assert recommend_by_influence(rj, "Mercutio") == ['Capulet', 'Montague', 'Benvol
 ###
 ### Problem 7
 ###
+def problem7(graph):
+    import random
+    relations = graph.edges()
+    len_relations = len(relations)
+
+    random_indices = (random.randint(0, len_relations-1) for _ in xrange(100))
+    random_relations = (relations[index] for index in random_indices)
+    ranking = lambda ls,x:0 if x not in ls else 1+ls.index(x)
+    rankavg = lambda r1,r2:0. if r1 is 0 or r2 is 0 else float(r1+r2)/2
+    def rankpair(f1,f2):
+        graph.remove_edge(f1,f2)
+        pair = (
+            rankavg(ranking(recommend_by_influence(graph, f1), f2),
+                    ranking(recommend_by_influence(graph, f2), f1)),
+            rankavg(ranking(recommend_by_number_of_common_friends(graph, f1), f2),
+                    ranking(recommend_by_number_of_common_friends(graph, f2), f1))
+        )
+        graph.add_edge(f1,f2)
+        return pair
+
+    random_rankpairs = list(rankpair(f1, f2) for (f1, f2) in random_relations)
+    random_inf_rankavgs = list(r1 for r1, r2 in random_rankpairs if r1 is not 0)
+    avginf = float(sum(random_inf_rankavgs)) / len(random_inf_rankavgs)
+    random_ncf_rankavgs = list(r2 for r1, r2 in random_rankpairs if r2 is not 0)
+    avgncf = float(sum(random_ncf_rankavgs)) / len(random_ncf_rankavgs)
+
+    print 'Average rank of influence method:', avginf
+    print 'Average rank of number of friends in common method:', avgncf
+    print '%s method is better'%('inf' if avginf < avgncf else 'ncf')
+
+problem7(rj)
 
 
 ###
