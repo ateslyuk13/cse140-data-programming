@@ -277,7 +277,9 @@ problem7(rj)
 ### Problem 8
 ###
 
-# (Your code goes here.)
+facebook = nx.Graph()
+with open('facebook-links.txt') as fb:
+    facebook.add_edges_from(line.split('\t',2)[:2] for line in fb)
 
 assert len(facebook.nodes()) == 63731
 assert len(facebook.edges()) == 817090
