@@ -180,7 +180,15 @@ def influence_map(graph, user):
     and are neither U nor one of U's friends.
     See the assignment for the definition of friend influence.
     """
-    print "To be implemented"
+    from itertools import groupby
+    number_of_friends = lambda x:len(friends(graph, x))
+    # find people to recommend having common friends
+    map = number_of_common_friends_map(graph, user)
+    # list tuple of the people and their weight calculated by number of friends that the friend in common has
+    result = ((k,1./number_of_friends(cf)) for k in map.iterkeys() for cf in common_friends(graph, k, user))
+    # sum up the weights for each recommender
+    result = {k: sum(weight for k, weight in items) for k, items in groupby(result, key=lambda x:x[0])}
+    return result
 
 assert influence_map(rj, "Mercutio") == { 'Benvolio': 0.2, 'Capulet': 0.5833333333333333, 'Friar Laurence': 0.2, 'Juliet': 0.2, 'Montague': 0.45 }
 
@@ -191,7 +199,8 @@ def recommend_by_influence(graph, user):
     who are not yet a friend of the given user.
     The order of the list is determined by the influence measurement.
     """
-    print "To be implemented"
+    map = influence_map(graph, user)
+    return number_map_to_sorted_list(map)
 
 assert recommend_by_influence(rj, "Mercutio") == ['Capulet', 'Montague', 'Benvolio', 'Friar Laurence', 'Juliet']
 
