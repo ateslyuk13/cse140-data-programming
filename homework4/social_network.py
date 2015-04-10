@@ -289,6 +289,9 @@ assert len(facebook.edges()) == 817090
 ### Problem 9
 ###
 
+fids = (fid for fid in facebook.nodes() if int(fid) % 1000 == 0)
+for fid in sorted(fids, key=lambda x:int(x)):
+    print fid, recommend_by_number_of_common_friends(facebook, fid)[:10]
 
 ###
 ### Problem 10
